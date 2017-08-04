@@ -17,6 +17,8 @@ class QueryModel(object):
         self._keep_prob = 1 - dropout
         self._num_hidden = num_hidden
         self._num_layers = num_layers
+        self._max_seq_length = data.get_shape()[1]
+        self._num_classes = target.get_shape()[2]
         self.prediction
         self.optimize
         self.error    
@@ -71,7 +73,7 @@ class QueryModel(object):
 
     @lazy_property
     def _sequence_mask(self):
-        return tf.sign(tf.reduce_max(tf.abs(self.target), reduction_indices=2))
+        return tf.sequence_mask(self.length, self._max_seq_length)
 
     @lazy_property
     def _logits(self):
@@ -81,13 +83,11 @@ class QueryModel(object):
         # Get outputs and states from base RNN
         output, state = self._base_network()
         # Softmax layer
-        max_length = int(self.target.get_shape()[1])
-        num_classes = int(self.target.get_shape()[2])
-        weight, bias = weight_and_bias(self._num_hidden, num_classes)
+        weight, bias = weight_and_bias(self._num_hidden, self._num_classes)
         # Flatten to apply same weights to all time steps
         output = tf.reshape(output, [-1, self._num_hidden])
         logits = tf.matmul(output, weight) + bias
-        logits = tf.reshape(logits, [-1, max_length, num_classes])
+        logits = tf.reshape(logits, [-1, self._max_seq_length, self._num_classes])
         return logits
 
     @lazy_property

@@ -25,10 +25,10 @@ def weight_and_bias(in_size, out_size, name = ""):
     weight_name = "{}_w".format(name)
     bias_name = "{}_b".format(name)
 
-    weight = tf.truncated_normal([in_size, out_size], stddev=0.01, dtype=DTYPE)
+    weight = tf.truncated_normal_initializer([in_size, out_size], stddev=0.01, dtype=DTYPE)
     weight = tf.get_variable(weight_name, initializer=weight)
 
-    bias = tf.constant(0.1, shape=[out_size], dtype=DTYPE)
+    bias = tf.constant_initializer(0.1, shape=[out_size], dtype=DTYPE)
     bias = tf.get_variable(bias_name, initializer=bias)
 
     return weight, bias
